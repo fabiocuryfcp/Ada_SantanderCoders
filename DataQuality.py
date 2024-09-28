@@ -3,7 +3,7 @@ import numpy as np
 import matplotlib.pyplot as plt
 
 class DataQuality:
-    def __init__(self, df_path="C:/Users/fabio/Desktop/DNC/Desafios e bases/CarPrice_Assignment.csv"):
+    def __init__(self, df_path="https://raw.githubusercontent.com/fabiocuryfcp/Ada_SantanderCoders/refs/heads/main/CarPrice_Assignment.csv"):
         self.df_path = df_path
         self.df = None
     
@@ -38,14 +38,23 @@ class DataQuality:
             return cols_notnum(self.df)
         else:
             print("O DataFrame não foi carregado corretamente.")
+
+    def null_values(self):
+        """Processa e imprime informações sobre valores nulos"""
+        if self.df is not None:
+            print("\nProcessando valores nulos...")
+            return plot_null_values(self.df)
+        else:
+            print("O DataFrame não foi carregado corretamente.")
     
     def run_analysis(self):
         """Executa o fluxo completo na ordem correta"""
         self.load_data()
         if self.df is not None:
             self.unique_values()
-            df_num = self.numeric_columns()
+            self.null_values()
             self.non_numeric_columns()
+            df_num = self.numeric_columns()
             print("\nAnálise de dados concluída.")
         else:
             print("Erro ao realizar a análise de dados.")
@@ -87,6 +96,8 @@ def cols_num(df1):
     df_num = df2.select_dtypes(include=['number'])
     
     for col in df_num.columns:
+        print(f'#################### Coluna {col} ####################')
+        display(df_num[col].describe())
         plt.figure(figsize=(10, 6))
         df_num[col].plot(title=col, kind='line')
         plt.xlabel('Índice')
@@ -94,14 +105,14 @@ def cols_num(df1):
         plt.grid()
         plt.show()
     
-    print("Correlação entre as colunas numéricas:")
+    print("'#################### Correlação entre as colunas numéricas '####################")
     print(df_num.corr())  # Use print ao invés de display
     return df_num
 
 def cols_notnum(df1):
     df2 = df1.select_dtypes(exclude='number').dropna(axis=1, how='all')
     for col in df2.columns:
-        print(f'Distribuição percentual para a coluna {col}:')
+        print(f'Distribuição para a coluna {col}:')
         print(round((df2[col].value_counts(normalize=True) * 100), 2), '\n')
         print(f'Contagem dos valores para a coluna {col}:')
         print(df2[col].value_counts(), '\n')
@@ -117,12 +128,14 @@ def cols_notnum(df1):
             print(f'Muitos valores a serem plotados. Existem {len(df2[col].unique())} valores únicos nessa coluna.')
     return df1
 
-def plot_null_values(self):
+def plot_null_values(df):
     """Plota a quantidade de valores nulos em cada coluna."""
-    if self.df is not None:
-        null_counts = self.df.isnull().sum()
+    null_counts = df.isna().sum()
+    
+    # Check if there are any null values
+    if null_counts.any():  # Check if any null counts are greater than 0
         plt.figure(figsize=(12, 6))
-        null_counts[null_counts > 0].plot(kind='bar', color='skyblue')
+        null_counts[null_counts > 0].plot(kind='bar', color='skyblue')  # Only plot columns with null values
         plt.title('Valores Nulos por Coluna')
         plt.xlabel('Colunas')
         plt.ylabel('Quantidade de Valores Nulos')
@@ -130,6 +143,7 @@ def plot_null_values(self):
         plt.grid(axis='y')
         plt.show()
     else:
-        print("O DataFrame não foi carregado corretamente.")
+        print("Não há valores nulos.")
+        
 
 
